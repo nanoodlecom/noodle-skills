@@ -34,7 +34,7 @@
       "y": 100,
       "fields": {
         "model": "nano-banana-2-lite",
-        "size": "1k",
+        "size": "1024x1024",
         "variations": "1"
       },
       "w": 250
