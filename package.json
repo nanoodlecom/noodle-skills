@@ -1,0 +1,22 @@
+{
+  "name": "noodle-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ready-to-install coding-agent skills, each wrapping a nanoodle visual AI workflow — poster, photo restyle, jingle, narrated poem, video teaser",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "nanoodle": "^0.1.0"
+  },
+  "license": "MIT",
+  "homepage": "https://nanoodle.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nanoodlecom/noodle-skills.git"
+  }
+}

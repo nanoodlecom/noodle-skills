@@ -1,0 +1,58 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "upload",
+      "name": "Picture",
+      "x": 60,
+      "y": 120,
+      "fields": {},
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "vision",
+      "name": "Looker",
+      "x": 340,
+      "y": 100,
+      "fields": {
+        "model": "gemini-2.5-flash-lite",
+        "q": "Describe this image in vivid, concrete detail."
+      },
+      "w": 250
+    },
+    {
+      "id": "n3",
+      "type": "llm",
+      "name": "Poet",
+      "x": 620,
+      "y": 100,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You are a poet. Turn the description into a wistful four-line poem. Reply with only the poem."
+      },
+      "w": 250,
+      "sizes": { "system": 120 }
+    },
+    {
+      "id": "n4",
+      "type": "tts",
+      "name": "Narration",
+      "x": 900,
+      "y": 100,
+      "fields": {
+        "model": "Kokoro-82m"
+      },
+      "w": 250
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "image" }, "to": { "node": "n2", "port": "image" } },
+    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "prompt" } },
+    { "id": "l3", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "prompt" } }
+  ],
+  "nid": 5,
+  "lid": 4,
+  "view": { "panX": 20, "panY": 40, "scale": 1 }
+}

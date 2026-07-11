@@ -1,0 +1,64 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "text",
+      "name": "Brief",
+      "x": 60,
+      "y": 60,
+      "fields": {
+        "text": "An upbeat 30-second jingle for a neighborhood coffee shop called Morning Ember. Warm, catchy, repeat the shop name in the hook."
+      },
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "llm",
+      "name": "Lyric writer",
+      "x": 340,
+      "y": 20,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You are a jingle songwriter. Write short, catchy jingle lyrics for the brief — a hook worth repeating, simple rhymes, under 12 lines. Write only the lyrics, no title, no commentary."
+      },
+      "w": 250,
+      "sizes": { "system": 120 }
+    },
+    {
+      "id": "n3",
+      "type": "llm",
+      "name": "Style writer",
+      "x": 620,
+      "y": 260,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You invent a musical style that fits the given lyrics. Reply with only the style, richly descriptive — no commentary."
+      },
+      "w": 250,
+      "sizes": { "system": 120 }
+    },
+    {
+      "id": "n4",
+      "type": "music",
+      "name": "Jingle",
+      "x": 900,
+      "y": 60,
+      "fields": {
+        "model": "Minimax-Music-02",
+        "instrumental": false,
+        "duration": "30"
+      },
+      "w": 250
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "text" }, "to": { "node": "n2", "port": "prompt" } },
+    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n4", "port": "lyrics" } },
+    { "id": "l3", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "prompt" } },
+    { "id": "l4", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "prompt" } }
+  ],
+  "nid": 5,
+  "lid": 5,
+  "view": { "panX": 20, "panY": 40, "scale": 1 }
+}

@@ -1,0 +1,50 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "text",
+      "name": "Tagline",
+      "x": 60,
+      "y": 120,
+      "fields": {
+        "text": "a slow cinematic drone shot over a misty mountain valley at sunrise"
+      },
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "llm",
+      "name": "Shot writer",
+      "x": 340,
+      "y": 80,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You write video prompts. Turn the one-liner into a single vivid shot description — subject, camera move, lighting, mood. One paragraph, reply with the prompt only."
+      },
+      "w": 250,
+      "sizes": { "system": 120 }
+    },
+    {
+      "id": "n3",
+      "type": "tvideo",
+      "name": "Teaser",
+      "x": 650,
+      "y": 110,
+      "fields": {
+        "model": "ltx-2-19b",
+        "resolution": "480p",
+        "aspect": "16:9",
+        "duration": "5"
+      },
+      "w": 250
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "text" }, "to": { "node": "n2", "port": "prompt" } },
+    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "prompt" } }
+  ],
+  "nid": 4,
+  "lid": 3,
+  "view": { "panX": 40, "panY": 60, "scale": 1 }
+}
