@@ -10,6 +10,12 @@ Each skill is just two files: a `SKILL.md` playbook and a `workflows/*.noodle-gr
 saved from the nanoodle editor. The `nanoodle` CLI (`npx nanoodle`) executes the graph; the
 agent supplies the inputs and hands back the outputs.
 
+> **Which repo do I want?** These are **prebuilt** skills — each one runs a single
+> ready-made workflow. Want one skill that teaches your agent to *design and run arbitrary
+> graphs* instead? That's [nanoodle-skill](https://github.com/nanoodlecom/nanoodle-skill).
+> Agent speaks MCP rather than skills? Use
+> [nanoodle-mcp](https://github.com/nanoodlecom/nanoodle-mcp).
+
 > **These skills spend real money.** Every run bills your NanoGPT balance — cents per run,
 > but real cents. Each SKILL.md carries an honest per-run ballpark, and agents are told to
 > mention cost before running repeatedly.
@@ -44,7 +50,8 @@ Other agents only need the folder somewhere they can read `SKILL.md` and run com
 
 Requirements at run time: Node.js >= 20 and a NanoGPT API key in `NANOGPT_API_KEY` (or a
 `.env` file passed via `--env-file`). `npx nanoodle` fetches the executor on first use —
-nothing else to install.
+nothing else to install. The skills are tested against the **nanoodle 0.2.x** CLI (the
+version `npx nanoodle` currently fetches); this repo's devDependency pins the same range.
 
 ## Try one from this repo
 
@@ -85,8 +92,9 @@ npm test
 ```
 
 Tests are fully offline and spend nothing: they verify each graph's derived input/output
-keys against its SKILL.md, that every model-bearing node pins a model, and they execute the
-poster-generator playbook's run command verbatim against a local stub API.
+keys against its SKILL.md, that every model-bearing node pins a model, and they execute
+every playbook's documented run command verbatim against a local stub API. The suite runs
+against the pinned devDependency, nanoodle 0.2.x — the same version `npx nanoodle` fetches.
 
 ## Limitations
 
