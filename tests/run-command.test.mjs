@@ -164,11 +164,9 @@ const SKILLS = [
     },
   },
   {
-    // Video jobs return a hosted URL; the 0.2.x CLI names the file before downloading it,
-    // so the extension is ".bin" (mime unknown until fetched). SKILL.md's contract holds:
-    // "use the path the CLI prints; do not hard-code the extension". Accept ".mp4" too so
-    // this tightens for free once the CLI derives the extension from the downloaded bytes.
-    dir: "skills/video-teaser", outDir: "teaser-out", key: "Teaser", ext: /\.(bin|mp4)$/,
+    // Video jobs return a hosted URL; since 0.4.0 the CLI derives the extension from the
+    // download's Content-Type, so the stubbed video/mp4 response must save as ".mp4".
+    dir: "skills/video-teaser", outDir: "teaser-out", key: "Teaser", ext: /\.mp4$/,
     script(srv) {
       srv.script("POST /api/v1/chat/completions", {
         json: { choices: [{ message: { content: SHOT } }], x_nanogpt_pricing: { costUsd: 0.001 } },
@@ -226,7 +224,7 @@ for (const s of SKILLS) {
       },
     });
 
-    // The CLI must report the documented output key (0.2.x: on stderr) and save the file.
+    // The CLI must report the documented output key (0.4.x: on stderr) and save the file.
     const m = stderr.match(new RegExp(`^${s.key}: saved (.+)$`, "m"));
     assert.ok(m, `CLI must print a '${s.key}: saved <path>' line, got:\n` + stderr);
     const saved = resolve(skillDir, m[1]);

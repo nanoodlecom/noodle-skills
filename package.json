@@ -11,7 +11,7 @@
     "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
-    "nanoodle": "^0.2.0"
+    "nanoodle": "^0.4.0"
   },
   "license": "MIT",
   "homepage": "https://nanoodle.com",
