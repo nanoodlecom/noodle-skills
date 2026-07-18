@@ -1,0 +1,67 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "text",
+      "name": "Feature",
+      "x": 60,
+      "y": 80,
+      "fields": { "text": "" },
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "text",
+      "name": "Style guide",
+      "x": 60,
+      "y": 240,
+      "fields": {
+        "text": "Style: clean SaaS dashboard. White background, #1a1a2e text, indigo #4f46e5 primary, 8px spacing grid, rounded-lg cards, Inter-like sans-serif. Light mode."
+      },
+      "w": 220
+    },
+    {
+      "id": "n3",
+      "type": "join",
+      "x": 340,
+      "y": 150,
+      "fields": { "sep": "\n\n" },
+      "w": 160
+    },
+    {
+      "id": "n4",
+      "type": "llm",
+      "x": 560,
+      "y": 100,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You write image prompts for UI mockups. Given a feature description and a style guide, reply with ONE detailed image prompt for a screenshot-style mockup of that screen: name every layout region and its position, spacing, the exact palette from the style guide, and realistic short UI labels (2-4 words each). Flat desktop screenshot, no browser chrome, no hands or devices, no walls of placeholder text. Reply with the prompt only."
+      },
+      "w": 260,
+      "sizes": { "system": 140 }
+    },
+    {
+      "id": "n5",
+      "type": "image",
+      "name": "Mockup",
+      "x": 870,
+      "y": 130,
+      "fields": {
+        "model": "nano-banana-2-lite",
+        "size": "1024x1024",
+        "variations": "1"
+      },
+      "w": 250
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "text" }, "to": { "node": "n3", "port": "a" } },
+    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "b" } },
+    { "id": "l3", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "prompt" } },
+    { "id": "l4", "from": { "node": "n4", "port": "text" }, "to": { "node": "n5", "port": "prompt" } }
+  ],
+  "nid": 6,
+  "lid": 5,
+  "view": { "panX": 40, "panY": 60, "scale": 1 }
+}

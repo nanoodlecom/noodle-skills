@@ -1,0 +1,81 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "text",
+      "name": "Diff",
+      "x": 60,
+      "y": 200,
+      "fields": { "text": "" },
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "llm",
+      "name": "Drafter",
+      "x": 340,
+      "y": 80,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You write pull request descriptions from unified diffs. Output a conventional PR body in markdown: a one-paragraph summary, a '## Changes' bullet list, and a '## Test plan'. Mention every file the diff touches. Reply with the PR body only."
+      },
+      "w": 250,
+      "sizes": { "system": 120 }
+    },
+    {
+      "id": "n3",
+      "type": "join",
+      "x": 630,
+      "y": 200,
+      "fields": { "sep": "\n\n--- DRAFT PR DESCRIPTION ---\n\n" },
+      "w": 200
+    },
+    {
+      "id": "n4",
+      "type": "llm",
+      "name": "Auditor",
+      "x": 880,
+      "y": 80,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You audit PR descriptions against the diff they describe. Input is the raw diff, then a divider, then the draft. List every breaking change, behavioral change, or touched file/area the draft fails to mention. Terse bullet notes only. If the draft is complete, reply exactly: no omissions."
+      },
+      "w": 250,
+      "sizes": { "system": 140 }
+    },
+    {
+      "id": "n5",
+      "type": "join",
+      "x": 1170,
+      "y": 200,
+      "fields": { "sep": "\n\n--- AUDIT NOTES ---\n\n" },
+      "w": 200
+    },
+    {
+      "id": "n6",
+      "type": "llm",
+      "name": "Final PR body",
+      "x": 1420,
+      "y": 120,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "Input is a draft PR description, a divider, then auditor notes. Produce the final PR description: keep the draft's structure, fold in every audit finding (add a '## Breaking changes' section if any exist). If the notes say 'no omissions', return the draft unchanged. Reply with the final markdown body only."
+      },
+      "w": 250,
+      "sizes": { "system": 140 }
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "text" }, "to": { "node": "n2", "port": "prompt" } },
+    { "id": "l2", "from": { "node": "n1", "port": "text" }, "to": { "node": "n3", "port": "a" } },
+    { "id": "l3", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "b" } },
+    { "id": "l4", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "prompt" } },
+    { "id": "l5", "from": { "node": "n2", "port": "text" }, "to": { "node": "n5", "port": "a" } },
+    { "id": "l6", "from": { "node": "n4", "port": "text" }, "to": { "node": "n5", "port": "b" } },
+    { "id": "l7", "from": { "node": "n5", "port": "text" }, "to": { "node": "n6", "port": "prompt" } }
+  ],
+  "nid": 7,
+  "lid": 8,
+  "view": { "panX": 20, "panY": 40, "scale": 0.8 }
+}
