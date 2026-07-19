@@ -1,0 +1,89 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "text",
+      "name": "Post",
+      "x": 40,
+      "y": 60,
+      "fields": { "text": "" },
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "text",
+      "name": "Style",
+      "x": 40,
+      "y": 260,
+      "fields": {
+        "text": "HOUSE STYLE (locked): flat duotone illustration, deep indigo + warm coral, generous negative space, single centered subject, subtle grain, no photorealism, no stock-art gloss."
+      },
+      "w": 220
+    },
+    {
+      "id": "n3",
+      "type": "join",
+      "x": 320,
+      "y": 160,
+      "fields": { "sep": "\n\n" },
+      "w": 160
+    },
+    {
+      "id": "n4",
+      "type": "llm",
+      "x": 540,
+      "y": 120,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You art-direct one social card. From the content and the HOUSE STYLE, write ONE disciplined scene prompt: a single concrete visual metaphor for the content, rendered strictly in the house style. If the content is a release (starts with a version tag), the prompt MUST instruct that the literal version string, e.g. 'v2.3.0', appears as short bold text in the image. Reply with the prompt only."
+      },
+      "w": 250,
+      "sizes": { "system": 120 }
+    },
+    {
+      "id": "n5",
+      "type": "draw",
+      "x": 840,
+      "y": 120,
+      "fields": {
+        "model": "gemini-omni",
+        "system": "Follow the scene prompt exactly. Render any quoted text verbatim and legibly.",
+        "showThinking": false
+      },
+      "w": 250
+    },
+    {
+      "id": "n6",
+      "type": "resize",
+      "name": "Hero",
+      "x": 1140,
+      "y": 60,
+      "fields": { "mode": "fill", "width": "1200", "height": "630" },
+      "w": 220
+    },
+    {
+      "id": "n7",
+      "type": "vision",
+      "name": "AltText",
+      "x": 1140,
+      "y": 280,
+      "fields": {
+        "model": "moonshotai/kimi-k3",
+        "q": "Write alt text for this image as a blog hero: one sentence, factual, describe what is actually visible including any rendered text or version numbers. No 'image of'. Reply with the alt text only."
+      },
+      "w": 250
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "text" }, "to": { "node": "n3", "port": "a" } },
+    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "b" } },
+    { "id": "l3", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "prompt" } },
+    { "id": "l4", "from": { "node": "n4", "port": "text" }, "to": { "node": "n5", "port": "prompt" } },
+    { "id": "l5", "from": { "node": "n5", "port": "image" }, "to": { "node": "n6", "port": "image" } },
+    { "id": "l6", "from": { "node": "n5", "port": "image" }, "to": { "node": "n7", "port": "image" } }
+  ],
+  "nid": 8,
+  "lid": 7,
+  "view": { "panX": 0, "panY": 0, "scale": 1 }
+}

@@ -1,0 +1,70 @@
+{
+  "v": 1,
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "upload",
+      "name": "Screenshot",
+      "x": 60,
+      "y": 80,
+      "fields": {},
+      "w": 220
+    },
+    {
+      "id": "n2",
+      "type": "text",
+      "name": "Spec",
+      "x": 60,
+      "y": 320,
+      "fields": {
+        "text": ""
+      },
+      "w": 240
+    },
+    {
+      "id": "n3",
+      "type": "vision",
+      "x": 360,
+      "y": 80,
+      "fields": {
+        "model": "openai/gpt-5.4-mini",
+        "q": "Describe this web page screenshot exhaustively and neutrally: every visible section and element, its position, any overlapping elements, cut-off or missing text, misaligned columns, broken images. Do not judge — only describe."
+      },
+      "w": 250
+    },
+    {
+      "id": "n4",
+      "type": "join",
+      "x": 660,
+      "y": 200,
+      "fields": {
+        "sep": "\n\n--- RENDERED PAGE (QA description) ---\n\n"
+      },
+      "w": 200
+    },
+    {
+      "id": "n5",
+      "type": "llm",
+      "name": "Verdict",
+      "x": 940,
+      "y": 180,
+      "fields": {
+        "model": "zai-org/glm-5.2",
+        "system": "You are a strict visual QA judge. Input: a page spec, then a neutral description of the rendered page. Compare them. Reply with ONLY this JSON: {\"pass\": boolean, \"violations\": [{\"issue\": string, \"severity\": \"critical\"|\"major\"|\"minor\"}]}. Ignore cosmetic rendering noise (font hinting, sub-pixel shifts); flag anything a human reviewer would reject: missing/overlapping elements, wrong copy, broken layout.",
+        "temperature": "0",
+        "format": "JSON"
+      },
+      "w": 260,
+      "sizes": { "system": 140 }
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": { "node": "n1", "port": "image" }, "to": { "node": "n3", "port": "image" } },
+    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n4", "port": "a" } },
+    { "id": "l3", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "b" } },
+    { "id": "l4", "from": { "node": "n4", "port": "text" }, "to": { "node": "n5", "port": "prompt" } }
+  ],
+  "nid": 6,
+  "lid": 5,
+  "view": { "panX": 40, "panY": 60, "scale": 1 }
+}

@@ -3,7 +3,9 @@
 **Ready-to-install agent skills, each wrapping a [nanoodle](https://nanoodle.com) visual AI
 workflow.** Drop a folder into your agent's skills directory and Claude Code (or any agent
 that reads markdown playbooks and runs shell commands) can generate posters, restyle photos,
-sing jingles, narrate poems, and render video teasers — headless, on your own
+sing jingles, narrate poems, and render video teasers — plus a coding-agent toolbelt: write
+alt text from real pixels, judge screenshots against a spec, mock up UI screens, draft
+self-audited PR descriptions, and mint OG cards — headless, on your own
 [NanoGPT](https://nano-gpt.com) key.
 
 Each skill is just two files: a `SKILL.md` playbook and a `workflows/*.noodle-graph.json`
@@ -29,6 +31,16 @@ agent supplies the inputs and hands back the outputs.
 | [jingle-maker](skills/jingle-maker/) | Brief → lyrics LLM + style LLM → sung ~30s track | `Brief` | `Jingle.<ext>` | ~$0.05–0.10 |
 | [narrated-poem](skills/narrated-poem/) | Picture → vision → four-line poem → spoken audio | `Picture` (file) | `Narration.<ext>` | ~$0.01 |
 | [video-teaser](skills/video-teaser/) | One-liner → shot-description LLM → 5s video clip | `Tagline` | `Teaser.<ext>` | ~$0.06 |
+
+### For coding agents
+
+| Skill | What it does | Inputs | Output | Cost / run (approx.) |
+|-------|--------------|--------|--------|----------------------|
+| [alt-text-writer](skills/alt-text-writer/) | Vision model reads the actual pixels → alt text + caption JSON | `Image` (file) | `Alt text` (text) | <$0.01 |
+| [visual-judge](skills/visual-judge/) | Screenshot vs written spec → neutral describe → pass/fail JSON verdict | `Screenshot` (file), `Spec` | `Verdict` (text) | ~$0.01 |
+| [ui-mockup](skills/ui-mockup/) | Feature sentence + style guide → screenshot-style mockup render | `Feature` | `Mockup.<ext>` | ~$0.04 |
+| [pr-describer](skills/pr-describer/) | Diff → draft → in-graph audit → final PR description | `Diff` (file) | `Final PR body` (text) | ~$0.01 |
+| [og-card-maker](skills/og-card-maker/) | Post/release line → house-style 1200×630 card + honest alt text | `Post` | `Hero.<ext>`, `AltText` (text) | ~$0.05 |
 
 Costs are ballparks from the NanoGPT catalog at the time of writing; the CLI prints the
 actual metered cost (and remaining balance) after every run.
@@ -71,7 +83,7 @@ npx nanoodle inspect skills/jingle-maker/workflows/jingle.noodle-graph.json
 
 ## Design your own
 
-These five are templates, not a ceiling. The recipe is five steps:
+These ten are templates, not a ceiling. The recipe is five steps:
 
 1. Build and test a workflow visually at [nanoodle.com](https://nanoodle.com) (runs in your
    browser on your own key), then press 💾 Save to download the `noodle-graph.json`.

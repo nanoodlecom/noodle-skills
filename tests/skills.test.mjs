@@ -37,6 +37,28 @@ const SKILLS = [
     dir: "skills/video-teaser", graph: "workflows/video-teaser.noodle-graph.json",
     required: ["Tagline"], optional: ["System prompt"], outputs: ["Teaser"],
   },
+  {
+    dir: "skills/alt-text-writer", graph: "workflows/alt-text.noodle-graph.json",
+    required: ["Image", "Alt rules", "Style guide"], optional: [], outputs: ["Alt text"],
+  },
+  {
+    dir: "skills/visual-judge", graph: "workflows/visual-judge.noodle-graph.json",
+    required: ["Screenshot", "Spec"], optional: ["System prompt"], outputs: ["Verdict"],
+  },
+  {
+    dir: "skills/ui-mockup", graph: "workflows/ui-mockup.noodle-graph.json",
+    required: ["Feature", "Style guide"], optional: ["System prompt"], outputs: ["Mockup"],
+  },
+  {
+    dir: "skills/pr-describer", graph: "workflows/pr-describe.noodle-graph.json",
+    required: ["Diff"], optional: ["System prompt", "System prompt 2", "System prompt 3"],
+    outputs: ["Final PR body"],
+  },
+  {
+    dir: "skills/og-card-maker", graph: "workflows/og-card.noodle-graph.json",
+    required: ["Post", "Style"], optional: ["System prompt", "System prompt 2"],
+    outputs: ["Hero", "AltText"],
+  },
 ];
 
 /** Node types whose SETTING_SPECS include a model knob → committed graphs must pin one. */
