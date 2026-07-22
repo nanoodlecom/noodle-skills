@@ -7,7 +7,9 @@
       "name": "Post",
       "x": 40,
       "y": 60,
-      "fields": { "text": "" },
+      "fields": {
+        "text": ""
+      },
       "w": 220
     },
     {
@@ -26,7 +28,9 @@
       "type": "join",
       "x": 320,
       "y": 160,
-      "fields": { "sep": "\n\n" },
+      "fields": {
+        "sep": "\n\n"
+      },
       "w": 160
     },
     {
@@ -36,20 +40,21 @@
       "y": 120,
       "fields": {
         "model": "zai-org/glm-5.2",
-        "system": "You art-direct one social card. From the content and the HOUSE STYLE, write ONE disciplined scene prompt: a single concrete visual metaphor for the content, rendered strictly in the house style. If the content is a release (starts with a version tag), the prompt MUST instruct that the literal version string, e.g. 'v2.3.0', appears as short bold text in the image. Reply with the prompt only."
+        "system": "You art-direct one social card. From the content and the HOUSE STYLE, write ONE disciplined image prompt, composed for a wide 1200x630 landscape crop with the subject centered: a single concrete visual metaphor for the content, rendered strictly in the house style. If the content is a release (starts with a version tag), the prompt MUST instruct that the literal version string, e.g. 'v2.3.0', appears as short bold text in the image. Reply with the prompt only."
       },
       "w": 250,
-      "sizes": { "system": 120 }
+      "sizes": {
+        "system": 120
+      }
     },
     {
       "id": "n5",
-      "type": "draw",
+      "type": "image",
       "x": 840,
       "y": 120,
       "fields": {
-        "model": "gemini-omni",
-        "system": "Follow the scene prompt exactly. Render any quoted text verbatim and legibly.",
-        "showThinking": false
+        "model": "nano-banana-2-lite",
+        "size": "1536x1024"
       },
       "w": 250
     },
@@ -59,7 +64,11 @@
       "name": "Hero",
       "x": 1140,
       "y": 60,
-      "fields": { "mode": "fill", "width": "1200", "height": "630" },
+      "fields": {
+        "mode": "fill",
+        "width": "1200",
+        "height": "630"
+      },
       "w": 220
     },
     {
@@ -76,14 +85,78 @@
     }
   ],
   "links": [
-    { "id": "l1", "from": { "node": "n1", "port": "text" }, "to": { "node": "n3", "port": "a" } },
-    { "id": "l2", "from": { "node": "n2", "port": "text" }, "to": { "node": "n3", "port": "b" } },
-    { "id": "l3", "from": { "node": "n3", "port": "text" }, "to": { "node": "n4", "port": "prompt" } },
-    { "id": "l4", "from": { "node": "n4", "port": "text" }, "to": { "node": "n5", "port": "prompt" } },
-    { "id": "l5", "from": { "node": "n5", "port": "image" }, "to": { "node": "n6", "port": "image" } },
-    { "id": "l6", "from": { "node": "n5", "port": "image" }, "to": { "node": "n7", "port": "image" } }
+    {
+      "id": "l1",
+      "from": {
+        "node": "n1",
+        "port": "text"
+      },
+      "to": {
+        "node": "n3",
+        "port": "a"
+      }
+    },
+    {
+      "id": "l2",
+      "from": {
+        "node": "n2",
+        "port": "text"
+      },
+      "to": {
+        "node": "n3",
+        "port": "b"
+      }
+    },
+    {
+      "id": "l3",
+      "from": {
+        "node": "n3",
+        "port": "text"
+      },
+      "to": {
+        "node": "n4",
+        "port": "prompt"
+      }
+    },
+    {
+      "id": "l4",
+      "from": {
+        "node": "n4",
+        "port": "text"
+      },
+      "to": {
+        "node": "n5",
+        "port": "prompt"
+      }
+    },
+    {
+      "id": "l5",
+      "from": {
+        "node": "n5",
+        "port": "image"
+      },
+      "to": {
+        "node": "n6",
+        "port": "image"
+      }
+    },
+    {
+      "id": "l6",
+      "from": {
+        "node": "n5",
+        "port": "image"
+      },
+      "to": {
+        "node": "n7",
+        "port": "image"
+      }
+    }
   ],
   "nid": 8,
   "lid": 7,
-  "view": { "panX": 0, "panY": 0, "scale": 1 }
+  "view": {
+    "panX": 0,
+    "panY": 0,
+    "scale": 1
+  }
 }
