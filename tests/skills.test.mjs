@@ -56,7 +56,7 @@ const SKILLS = [
   },
   {
     dir: "skills/og-card-maker", graph: "workflows/og-card.noodle-graph.json",
-    required: ["Post", "Style"], optional: ["System prompt", "System prompt 2"],
+    required: ["Post", "Style"], optional: ["System prompt"],
     outputs: ["Hero", "AltText"],
   },
 ];

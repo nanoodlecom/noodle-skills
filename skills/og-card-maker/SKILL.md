@@ -7,10 +7,11 @@ description: Generate a 1200×630 social/OG card in a locked house style from a 
 
 Runs the bundled nanoodle workflow `workflows/og-card.noodle-graph.json` against the
 NanoGPT API in four stages: the content (`Post`) and a locked art direction (`Style`) are
-joined into a briefing; an LLM art-director writes one disciplined scene prompt (for
-releases, the literal version string must appear as rendered text); a chat-image model
-(`gemini-omni` — reasons before it draws, so short literal text like "v2.3.0" renders
-reliably) paints the card; then the image fans out to a local resize (`Hero`, exactly
+joined into a briefing; an LLM art-director writes one disciplined image prompt composed
+for a wide landscape crop (for releases, the literal version string must appear as
+rendered text); an image model (`nano-banana-2-lite`) paints the card — check the
+`AltText` output to confirm any literal text rendered correctly; then the image fans out
+to a local resize (`Hero`, exactly
 1200×630 — the OG spec) and a vision model that writes alt text (`AltText`) from the actual
 pixels — if the render botched something, the alt text says what is really there. Requires
 Node.js >= 20 and the `nanoodle` npm package (`npx nanoodle` fetches it).
@@ -54,7 +55,6 @@ npx nanoodle inspect workflows/og-card.noodle-graph.json
 | `Post` | yes | Post body, or `vX.Y.Z — <changelog line>` for a release |
 | `Style` | no (default baked in) | House art direction: palette, composition rules, what to avoid |
 | `System prompt` | no | Override the art-director LLM's instructions |
-| `System prompt 2` | no | Override the drawing model's instructions |
 
 ## Outputs
 
@@ -76,6 +76,6 @@ claude mcp add nanoodle -- npx nanoodle-mcp --graphs ~/noodles --out ~/noodle-ou
 
 ## Cost
 
-Each run costs about **$0.05** in NanoGPT credit (the `gemini-omni` draw dominates; the
+Each run costs about **$0.05** in NanoGPT credit (the image generation is ~$0.04; the
 LLM and vision steps are a cent or less combined). The resize is local and free. Runs
 spend real credit — tell the user before regenerating repeatedly.

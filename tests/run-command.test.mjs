@@ -303,18 +303,16 @@ const SKILLS = [
     dir: "skills/og-card-maker", outDir: "og-out", key: "Hero", ext: /\.png$/,
     textKey: "AltText", textValue: OG_ALT,
     script(srv) {
-      // Art director (llm), draw (chat-image), and alt-text (vision) share one endpoint.
+      // Art director (llm) and alt-text (vision) share the chat endpoint; the card render is a plain image generation.
       srv.script("POST /api/v1/chat/completions", (req) => {
         if (req.json.model === "zai-org/glm-5.2")
           return { json: { choices: [{ message: { content: SCENE } }], x_nanogpt_pricing: { costUsd: 0.001 } } };
-        if (req.json.model === "gemini-omni")
-          return { json: { choices: [{ message: {
-            content: "Here is the card.",
-            images: [{ image_url: { url: "data:image/png;base64," + PNG_B64 } }],
-          } }], x_nanogpt_pricing: { costUsd: 0.04 } } };
         if (req.json.model === "moonshotai/kimi-k3")
           return { json: { choices: [{ message: { content: OG_ALT } }], x_nanogpt_pricing: { costUsd: 0.001 } } };
         assert.fail("unexpected chat model: " + req.json.model);
+      });
+      srv.script("POST /v1/images/generations", {
+        json: { data: [{ b64_json: PNG_B64 }], cost: 0.04 },
       });
     },
     verify(srv) {
@@ -323,14 +321,15 @@ const SKILLS = [
       assert.ok(artReq, "run must call the art-director LLM");
       assert.ok(JSON.stringify(artReq.json.messages).includes("v2.3.0"),
         "the Post input from the documented command must reach the art director");
-      const drawReq = byModel("gemini-omni")[0];
-      assert.ok(drawReq, "run must call the draw model");
-      assert.ok(JSON.stringify(drawReq.json.messages).includes(SCENE),
-        "the art director's scene prompt must reach the draw model");
+      const imgReq = srv.of("POST /v1/images/generations")[0];
+      assert.ok(imgReq, "run must call the image endpoint");
+      assert.equal(imgReq.json.model, "nano-banana-2-lite");
+      assert.ok(String(imgReq.json.prompt).includes(SCENE),
+        "the art director's prompt must reach the image model");
       const visReq = byModel("moonshotai/kimi-k3")[0];
       assert.ok(visReq, "run must call the alt-text vision model");
       assert.ok(JSON.stringify(visReq.json.messages).includes(PNG_B64),
-        "the drawn image must reach the alt-text vision call");
+        "the rendered image must reach the alt-text vision call");
     },
   },
 ];
