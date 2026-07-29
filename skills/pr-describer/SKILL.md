@@ -55,9 +55,21 @@ npx nanoodle inspect workflows/pr-describe.noodle-graph.json
 | Key | Required | What to pass |
 |-----|----------|--------------|
 | `Diff` | yes | The unified diff, usually `@/tmp/pr-diff.txt` |
-| `System prompt` | no | Override the drafter's house style |
-| `System prompt 2` | no | Override the auditor's instructions |
-| `System prompt 3` | no | Override the reviser's instructions |
+| `Drafter` | no | Override the drafter's house style (that node's system prompt) |
+| `Auditor` | no | Override the auditor's instructions (that node's system prompt) |
+| `Final PR body` | no | Override the reviser's instructions (that node's system prompt) |
+
+Each optional key is a node name from the editor, and it replaces that node's system
+prompt. `Final PR body` is the reviser node's name, so it is both an optional input key
+and the output key. Inputs and outputs are separate namespaces:
+
+```sh
+--input "Final PR body=<custom reviser instructions>"   # sets the reviser's system prompt
+--input "Drafter=<custom house style>"                  # sets the drafter's system prompt
+--input "Auditor=<custom audit instructions>"           # sets the auditor's system prompt
+```
+
+`outputs["Final PR body"]` still carries the finished description.
 
 ## Outputs
 

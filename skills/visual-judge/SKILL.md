@@ -66,7 +66,11 @@ npx nanoodle inspect workflows/visual-judge.noodle-graph.json
 |-----|----------|--------------|
 | `Screenshot` | yes | Screenshot file path (`@path`) or https URL |
 | `Spec` | yes | Acceptance criteria as prose: what must be visible, what must not overlap, required copy |
-| `System prompt` | no | Override the judge's instructions (default judges layout vs spec, ignores cosmetic noise) |
+| `Verdict` | no | Override the judge's instructions (default judges layout vs spec, ignores cosmetic noise) |
+
+`Verdict` is the judge node's name, so it is both the optional input key and the output
+key. Inputs and outputs are separate namespaces: `--input "Verdict=..."` replaces the
+judge's system prompt, and `outputs.Verdict` carries the judgement.
 
 ## Outputs
 

@@ -62,7 +62,7 @@ Other agents only need the folder somewhere they can read `SKILL.md` and run com
 
 Requirements at run time: Node.js >= 20 and a NanoGPT API key in `NANOGPT_API_KEY` (or a
 `.env` file passed via `--env-file`). `npx nanoodle` fetches the executor on first use —
-nothing else to install. The skills are tested against the **nanoodle 0.4.x** CLI (the
+nothing else to install. The skills are tested against the **nanoodle 0.8.x** CLI (the
 version `npx nanoodle` currently fetches); this repo's devDependency pins the same range.
 
 ## Try one from this repo
@@ -88,7 +88,10 @@ These ten are templates, not a ceiling. The recipe is five steps:
 1. Build and test a workflow visually at [nanoodle.com](https://nanoodle.com) (runs in your
    browser on your own key), then press 💾 Save to download the `noodle-graph.json`.
 2. **Name your nodes** in the editor — custom node names become the `--input` keys and
-   output filenames.
+   output filenames. A node's name becomes the key of its single input, and that includes
+   the case where the only unwired input left is the optional system prompt. So a node
+   named `Poet` whose prompt arrives over a wire takes `--input "Poet=…"`, not
+   `--input "System prompt=…"`.
 3. Drop the file into `your-skill/workflows/`.
 4. `npx nanoodle inspect` it and check the derived keys.
 5. Write `SKILL.md` documenting the exact run command.
@@ -106,7 +109,12 @@ npm test
 Tests are fully offline and spend nothing: they verify each graph's derived input/output
 keys against its SKILL.md, that every model-bearing node pins a model, and they execute
 every playbook's documented run command verbatim against a local stub API. The suite runs
-against the pinned devDependency, nanoodle 0.4.x — the same version `npx nanoodle` fetches.
+against the pinned devDependency, nanoodle 0.8.x — the same version `npx nanoodle` fetches.
+
+One guard has no hardcoded expectation: for every skill it derives the input keys from that
+skill's own graph with the installed library, then asserts the `## Inputs` table lists
+exactly those keys and that every `--input "<Key>=` the playbook types is one of them. A
+library that renames a key therefore fails a commit here, not a user's run.
 
 ## Limitations
 

@@ -27,15 +27,15 @@ const SKILLS = [
   },
   {
     dir: "skills/jingle-maker", graph: "workflows/jingle.noodle-graph.json",
-    required: ["Brief"], optional: ["System prompt", "System prompt 2"], outputs: ["Jingle"],
+    required: ["Brief"], optional: ["Lyric writer", "Style writer"], outputs: ["Jingle"],
   },
   {
     dir: "skills/narrated-poem", graph: "workflows/narrated-poem.noodle-graph.json",
-    required: ["Picture"], optional: ["System prompt"], outputs: ["Narration"],
+    required: ["Picture"], optional: ["Poet"], outputs: ["Narration"],
   },
   {
     dir: "skills/video-teaser", graph: "workflows/video-teaser.noodle-graph.json",
-    required: ["Tagline"], optional: ["System prompt"], outputs: ["Teaser"],
+    required: ["Tagline"], optional: ["Shot writer"], outputs: ["Teaser"],
   },
   {
     dir: "skills/alt-text-writer", graph: "workflows/alt-text.noodle-graph.json",
@@ -43,7 +43,7 @@ const SKILLS = [
   },
   {
     dir: "skills/visual-judge", graph: "workflows/visual-judge.noodle-graph.json",
-    required: ["Screenshot", "Spec"], optional: ["System prompt"], outputs: ["Verdict"],
+    required: ["Screenshot", "Spec"], optional: ["Verdict"], outputs: ["Verdict"],
   },
   {
     dir: "skills/ui-mockup", graph: "workflows/ui-mockup.noodle-graph.json",
@@ -51,7 +51,7 @@ const SKILLS = [
   },
   {
     dir: "skills/pr-describer", graph: "workflows/pr-describe.noodle-graph.json",
-    required: ["Diff"], optional: ["System prompt", "System prompt 2", "System prompt 3"],
+    required: ["Diff"], optional: ["Drafter", "Auditor", "Final PR body"],
     outputs: ["Final PR body"],
   },
   {
@@ -98,6 +98,30 @@ for (const s of SKILLS) {
     const md = readFileSync(root + s.dir + "/SKILL.md", "utf8");
     for (const key of [...s.required, ...s.optional, ...s.outputs]) {
       assert.ok(md.includes(key), `SKILL.md must mention key "${key}"`);
+    }
+  });
+
+  // DURABLE GUARD (no hardcoded expectation): the library derives the truth from the graph,
+  // and SKILL.md must agree with it. A library rename of an input key now fails a commit here
+  // instead of failing an agent's run. Both directions are checked:
+  //   (a) the "## Inputs" table lists exactly the derived keys, in order — a renamed key that
+  //       nobody documented fails, and a stale key left in the table fails too;
+  //   (b) every `--input "<Key>=` the playbook tells the agent to type is a real derived key.
+  test(`${s.dir}: SKILL.md input table is exactly what the library derives`, async () => {
+    const wf = await Workflow.load(graphPath, { apiKey: "unused" });
+    const derived = wf.inputs.map((i) => i.key);
+    const md = readFileSync(root + s.dir + "/SKILL.md", "utf8");
+
+    const section = md.split(/^## Inputs$/m)[1];
+    assert.ok(section, "SKILL.md must have an '## Inputs' section");
+    const documented = [...section.split(/^## /m)[0].matchAll(/^\|\s*`([^`]+)`\s*\|/gm)].map((m) => m[1]);
+    assert.deepEqual(documented, derived,
+      "the '## Inputs' table must list exactly the keys the installed library derives from the graph");
+
+    for (const [, key] of md.matchAll(/--input\s+"([^"=]+)=/g)) {
+      assert.ok(derived.includes(key),
+        `SKILL.md tells the agent to pass --input "${key}=…", which the library does not derive ` +
+        `from this graph — derived keys: ${derived.map((k) => `"${k}"`).join(", ")}`);
     }
   });
 

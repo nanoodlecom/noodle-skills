@@ -34,7 +34,7 @@ structured result (paths, costUsd, remainingBalance).
 Optional overrides:
 
 ```sh
---input "System prompt=<custom poet instructions, e.g. write a limerick instead>"
+--input "Poet=<custom poet instructions, e.g. write a limerick instead>"
 --set "n4.voice=am_michael"        # pick a Kokoro voice (af_bella, am_adam, bf_emma, …)
 --set "n2.q=<different question to ask about the image>"
 ```
@@ -50,7 +50,9 @@ npx nanoodle inspect workflows/narrated-poem.noodle-graph.json
 | Key | Required | What to pass |
 |-----|----------|--------------|
 | `Picture` | yes | `@<path>` to the user's image file (jpg/png/webp) |
-| `System prompt` | no | Custom instructions for the poem-writing LLM |
+| `Poet` | no | Custom instructions for the poem-writing LLM (its system prompt) |
+
+`Poet` is the node name shown in the editor. It replaces that node's system prompt.
 
 ## Outputs
 
