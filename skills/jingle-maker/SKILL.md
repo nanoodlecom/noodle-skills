@@ -35,10 +35,10 @@ or two — don't kill the run early.
 Optional overrides:
 
 ```sh
---input "System prompt=<custom lyric-writer instructions>"     # the lyric LLM
---input "System prompt 2=<custom style-writer instructions>"   # the style LLM
---set "n4.duration=60"                                         # longer track (seconds)
---set "n4.instrumental=true"                                   # no vocals
+--input "Lyric writer=<custom lyric-writer instructions>"   # the lyric LLM
+--input "Style writer=<custom style-writer instructions>"   # the style LLM
+--set "n4.duration=60"                                      # longer track (seconds)
+--set "n4.instrumental=true"                                # no vocals
 ```
 
 Inspect the interface anytime with:
@@ -52,8 +52,11 @@ npx nanoodle inspect workflows/jingle.noodle-graph.json
 | Key | Required | What to pass |
 |-----|----------|--------------|
 | `Brief` | yes | What the jingle is for — product, mood, length, anything to repeat |
-| `System prompt` | no | Custom instructions for the lyric-writing LLM |
-| `System prompt 2` | no | Custom instructions for the style-inventing LLM |
+| `Lyric writer` | no | Custom instructions for the lyric-writing LLM (its system prompt) |
+| `Style writer` | no | Custom instructions for the style-inventing LLM (its system prompt) |
+
+The two optional keys are the node names shown in the editor. Each one replaces the
+system prompt of the node with that name.
 
 ## Outputs
 

@@ -1,0 +1,70 @@
+name: latest-executor
+
+# Why this job exists.
+#
+# The offline suite derives each skill's expected keys from the INSTALLED nanoodle, and
+# `npm ci` installs the pinned range out of the lockfile. A key rename in a NEWER published
+# release is therefore invisible to `npm test` until somebody moves the pin — and it breaks a
+# user first, because every SKILL.md tells the agent to run `npx nanoodle`, which fetches
+# latest. That is exactly how the "System prompt" break reached users.
+#
+# This job closes the gap: weekly, it installs nanoodle@latest over the pin and runs the same
+# suite. A rename in a published release fails here, before an agent types the stale key.
+
+on:
+  schedule:
+    - cron: "23 6 * * 1" # Mondays, 06:23 UTC
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/latest-executor.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  derive-against-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Compare the pin with the published latest
+        run: |
+          pinned=$(node -p "require('./node_modules/nanoodle/package.json').version")
+          latest=$(npm view nanoodle version)
+          echo "pinned (lockfile): $pinned"
+          echo "latest (npm):      $latest"
+          if [ "$pinned" != "$latest" ]; then
+            echo "::notice::npx nanoodle fetches $latest; this repo pins $pinned. The suite below runs against $latest."
+          fi
+
+      # Over the pin, not saved: the lockfile stays the reviewed one.
+      - name: Install the latest published executor
+        run: npm install --no-save --no-package-lock nanoodle@latest
+
+      - name: Derive the keys against it
+        run: npm test
+
+      # A scheduled run that only turns a tick red is easy to miss, so failure files an issue.
+      - name: File an issue when the latest executor disagrees
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="noodle-skills disagrees with the latest published nanoodle"
+          open=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number')
+          body="The weekly \`latest-executor\` job installed \`nanoodle@latest\` over the pinned
+          devDependency and \`npm test\` failed. Usually this means the library renamed a derived
+          input or output key, so the SKILL.md playbooks are now stale for anybody running
+          \`npx nanoodle\`. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi

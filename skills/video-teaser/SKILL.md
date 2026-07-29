@@ -36,7 +36,7 @@ few minutes — don't kill the run early.
 Optional overrides (each raises cost — see Cost below):
 
 ```sh
---input "System prompt=<custom shot-writer instructions>"
+--input "Shot writer=<custom shot-writer instructions>"
 --set "n3.resolution=720p"      # sharper (about $0.08/run) — 1080p about $0.12
 --set "n3.duration=10"          # longer clip (roughly doubles the video cost)
 --set "n3.aspect=9:16"          # portrait
@@ -53,7 +53,9 @@ npx nanoodle inspect workflows/video-teaser.noodle-graph.json
 | Key | Required | What to pass |
 |-----|----------|--------------|
 | `Tagline` | yes | The one-line concept for the clip |
-| `System prompt` | no | Custom instructions for the shot-writing LLM |
+| `Shot writer` | no | Custom instructions for the shot-writing LLM (its system prompt) |
+
+`Shot writer` is the node name shown in the editor. It replaces that node's system prompt.
 
 ## Outputs
 

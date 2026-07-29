@@ -27,15 +27,15 @@ const SKILLS = [
   },
   {
     dir: "skills/jingle-maker", graph: "workflows/jingle.noodle-graph.json",
-    required: ["Brief"], optional: ["System prompt", "System prompt 2"], outputs: ["Jingle"],
+    required: ["Brief"], optional: ["Lyric writer", "Style writer"], outputs: ["Jingle"],
   },
   {
     dir: "skills/narrated-poem", graph: "workflows/narrated-poem.noodle-graph.json",
-    required: ["Picture"], optional: ["System prompt"], outputs: ["Narration"],
+    required: ["Picture"], optional: ["Poet"], outputs: ["Narration"],
   },
   {
     dir: "skills/video-teaser", graph: "workflows/video-teaser.noodle-graph.json",
-    required: ["Tagline"], optional: ["System prompt"], outputs: ["Teaser"],
+    required: ["Tagline"], optional: ["Shot writer"], outputs: ["Teaser"],
   },
   {
     dir: "skills/alt-text-writer", graph: "workflows/alt-text.noodle-graph.json",
@@ -43,7 +43,7 @@ const SKILLS = [
   },
   {
     dir: "skills/visual-judge", graph: "workflows/visual-judge.noodle-graph.json",
-    required: ["Screenshot", "Spec"], optional: ["System prompt"], outputs: ["Verdict"],
+    required: ["Screenshot", "Spec"], optional: ["Verdict"], outputs: ["Verdict"],
   },
   {
     dir: "skills/ui-mockup", graph: "workflows/ui-mockup.noodle-graph.json",
@@ -51,7 +51,7 @@ const SKILLS = [
   },
   {
     dir: "skills/pr-describer", graph: "workflows/pr-describe.noodle-graph.json",
-    required: ["Diff"], optional: ["System prompt", "System prompt 2", "System prompt 3"],
+    required: ["Diff"], optional: ["Drafter", "Auditor", "Final PR body"],
     outputs: ["Final PR body"],
   },
   {
@@ -59,6 +59,19 @@ const SKILLS = [
     required: ["Post", "Style"], optional: ["System prompt"],
     outputs: ["Hero", "AltText"],
   },
+];
+
+/**
+ * How a SKILL.md is allowed to name an output key, mirroring what the CLI actually emits:
+ * the `<Key>:` stderr line, the `<Key>.<ext>` saved file, and `outputs.<Key>` /
+ * `outputs["<Key>"]` in the stdout JSON summary. Backticks delimit every form, so a key
+ * can never run past one (the character classes exclude the backtick).
+ */
+const OUTPUT_REF_PATTERNS = [
+  /`([A-Za-z][\w .-]*?):`/g,
+  /`([A-Za-z][\w .-]*?)\.<ext>`/g,
+  /outputs\.([A-Za-z]\w*)/g,
+  /outputs\["([^"\]]+)"\]/g,
 ];
 
 /** Node types whose SETTING_SPECS include a model knob → committed graphs must pin one. */
@@ -99,6 +112,52 @@ for (const s of SKILLS) {
     for (const key of [...s.required, ...s.optional, ...s.outputs]) {
       assert.ok(md.includes(key), `SKILL.md must mention key "${key}"`);
     }
+  });
+
+  // DURABLE GUARD (no hardcoded expectation): the library derives the truth from the graph,
+  // and SKILL.md must agree with it. A library rename of an input key now fails a commit here
+  // instead of failing an agent's run. Both directions are checked:
+  //   (a) the "## Inputs" table lists exactly the derived keys, in order — a renamed key that
+  //       nobody documented fails, and a stale key left in the table fails too;
+  //   (b) every `--input "<Key>=` the playbook tells the agent to type is a real derived key.
+  test(`${s.dir}: SKILL.md input table is exactly what the library derives`, async () => {
+    const wf = await Workflow.load(graphPath, { apiKey: "unused" });
+    const derived = wf.inputs.map((i) => i.key);
+    const md = readFileSync(root + s.dir + "/SKILL.md", "utf8");
+
+    const section = md.split(/^## Inputs$/m)[1];
+    assert.ok(section, "SKILL.md must have an '## Inputs' section");
+    const documented = [...section.split(/^## /m)[0].matchAll(/^\|\s*`([^`]+)`\s*\|/gm)].map((m) => m[1]);
+    assert.deepEqual(documented, derived,
+      "the '## Inputs' table must list exactly the keys the installed library derives from the graph");
+
+    for (const [, key] of md.matchAll(/--input\s+"([^"=]+)=/g)) {
+      assert.ok(derived.includes(key),
+        `SKILL.md tells the agent to pass --input "${key}=…", which the library does not derive ` +
+        `from this graph — derived keys: ${derived.map((k) => `"${k}"`).join(", ")}`);
+    }
+  });
+
+  // DURABLE GUARD, output side (no hardcoded expectation). The '## Outputs' section is prose,
+  // not a table, so the guard reads the three reference forms the CLI itself emits, collects
+  // every key the section names, and requires that set to equal the derived set. A stale key
+  // therefore fails even when the same string appears elsewhere in the file, which is the hole
+  // the plain `md.includes(key)` assertion above leaves open.
+  test(`${s.dir}: SKILL.md output section names exactly the derived output keys`, async () => {
+    const wf = await Workflow.load(graphPath, { apiKey: "unused" });
+    const derived = [...new Set(wf.outputs.map((o) => o.key))].sort();
+    const md = readFileSync(root + s.dir + "/SKILL.md", "utf8");
+
+    const rest = md.split(/^## Outputs$/m)[1];
+    assert.ok(rest, "SKILL.md must have an '## Outputs' section");
+    const section = rest.split(/^## /m)[0];
+
+    const named = new Set();
+    for (const re of OUTPUT_REF_PATTERNS) for (const [, key] of section.matchAll(re)) named.add(key);
+    assert.deepEqual([...named].sort(), derived,
+      "the '## Outputs' section must name exactly the output keys the installed library derives " +
+      "from the graph. Name a key with `<Key>:` (the CLI's stderr line), `<Key>.<ext>` (the saved " +
+      "file), `outputs.<Key>` or `outputs[\"<Key>\"]` (the stdout summary)");
   });
 
   test(`${s.dir}: every model-bearing node pins a model`, async () => {
