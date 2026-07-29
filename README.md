@@ -91,7 +91,10 @@ These ten are templates, not a ceiling. The recipe is five steps:
    output filenames. A node's name becomes the key of its single input, and that includes
    the case where the only unwired input left is the optional system prompt. So a node
    named `Poet` whose prompt arrives over a wire takes `--input "Poet=…"`, not
-   `--input "System prompt=…"`.
+   `--input "System prompt=…"`. Leave the node unnamed and the key stays the generic label
+   (`System prompt`) — the substitution needs a name to substitute. If a named node is also
+   a sink, its name is both the input key and the output key; inputs and outputs are
+   separate namespaces, so that is legal.
 3. Drop the file into `your-skill/workflows/`.
 4. `npx nanoodle inspect` it and check the derived keys.
 5. Write `SKILL.md` documenting the exact run command.
@@ -111,10 +114,24 @@ keys against its SKILL.md, that every model-bearing node pins a model, and they 
 every playbook's documented run command verbatim against a local stub API. The suite runs
 against the pinned devDependency, nanoodle 0.8.x — the same version `npx nanoodle` fetches.
 
-One guard has no hardcoded expectation: for every skill it derives the input keys from that
-skill's own graph with the installed library, then asserts the `## Inputs` table lists
-exactly those keys and that every `--input "<Key>=` the playbook types is one of them. A
-library that renames a key therefore fails a commit here, not a user's run.
+Two guards have no hardcoded expectation. For every skill they derive the keys from that
+skill's own graph with the installed library, then assert that the `## Inputs` table lists
+exactly the derived input keys, that the `## Outputs` section names exactly the derived
+output keys, and that every `--input "<Key>=` the playbook types is a derived key.
+
+The scope of those guards, stated plainly: they read the **installed** library, and `npm ci`
+installs the pinned range. A key rename in a *newer* published release stays invisible to a
+commit here until somebody moves the pin — so the pinned suite alone would not have caught
+the last break either. A second workflow,
+[`.github/workflows/latest-executor.yml`](.github/workflows/latest-executor.yml), closes
+that gap: weekly it installs `nanoodle@latest` over the pin and runs the same suite. A
+published rename fails that job, which is still before a user's run, because every playbook
+tells the agent to run `npx nanoodle` — that is, latest.
+
+Two workflows have an input key equal to an output key, because both come from one node's
+name (`Verdict` in visual-judge, `Final PR body` in pr-describer). A separate test proves
+what that does: the input half sets that node's system prompt, the output half still carries
+its result, and nothing becomes ambiguous.
 
 ## Limitations
 
