@@ -60,8 +60,10 @@ npx nanoodle inspect workflows/pr-describe.noodle-graph.json
 | `Final PR body` | no | Override the reviser's instructions (that node's system prompt) |
 
 Each optional key is a node name from the editor, and it replaces that node's system
-prompt. `Final PR body` is the reviser node's name, so it is both an optional input key
-and the output key. Inputs and outputs are separate namespaces:
+prompt. `Final PR body` is the reviser node's name, so it is both an optional input key and
+the output key. A rename cannot separate them — it renames both. The two halves never meet:
+the input sets the reviser's system prompt, the output carries the reviser's result, and
+neither is ambiguous, because each namespace holds one `Final PR body`.
 
 ```sh
 --input "Final PR body=<custom reviser instructions>"   # sets the reviser's system prompt

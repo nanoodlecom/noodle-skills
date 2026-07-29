@@ -61,6 +61,19 @@ const SKILLS = [
   },
 ];
 
+/**
+ * How a SKILL.md is allowed to name an output key, mirroring what the CLI actually emits:
+ * the `<Key>:` stderr line, the `<Key>.<ext>` saved file, and `outputs.<Key>` /
+ * `outputs["<Key>"]` in the stdout JSON summary. Backticks delimit every form, so a key
+ * can never run past one (the character classes exclude the backtick).
+ */
+const OUTPUT_REF_PATTERNS = [
+  /`([A-Za-z][\w .-]*?):`/g,
+  /`([A-Za-z][\w .-]*?)\.<ext>`/g,
+  /outputs\.([A-Za-z]\w*)/g,
+  /outputs\["([^"\]]+)"\]/g,
+];
+
 /** Node types whose SETTING_SPECS include a model knob → committed graphs must pin one. */
 const MODEL_BEARING = new Set(
   Object.entries(SETTING_SPECS)
@@ -123,6 +136,28 @@ for (const s of SKILLS) {
         `SKILL.md tells the agent to pass --input "${key}=…", which the library does not derive ` +
         `from this graph — derived keys: ${derived.map((k) => `"${k}"`).join(", ")}`);
     }
+  });
+
+  // DURABLE GUARD, output side (no hardcoded expectation). The '## Outputs' section is prose,
+  // not a table, so the guard reads the three reference forms the CLI itself emits, collects
+  // every key the section names, and requires that set to equal the derived set. A stale key
+  // therefore fails even when the same string appears elsewhere in the file, which is the hole
+  // the plain `md.includes(key)` assertion above leaves open.
+  test(`${s.dir}: SKILL.md output section names exactly the derived output keys`, async () => {
+    const wf = await Workflow.load(graphPath, { apiKey: "unused" });
+    const derived = [...new Set(wf.outputs.map((o) => o.key))].sort();
+    const md = readFileSync(root + s.dir + "/SKILL.md", "utf8");
+
+    const rest = md.split(/^## Outputs$/m)[1];
+    assert.ok(rest, "SKILL.md must have an '## Outputs' section");
+    const section = rest.split(/^## /m)[0];
+
+    const named = new Set();
+    for (const re of OUTPUT_REF_PATTERNS) for (const [, key] of section.matchAll(re)) named.add(key);
+    assert.deepEqual([...named].sort(), derived,
+      "the '## Outputs' section must name exactly the output keys the installed library derives " +
+      "from the graph. Name a key with `<Key>:` (the CLI's stderr line), `<Key>.<ext>` (the saved " +
+      "file), `outputs.<Key>` or `outputs[\"<Key>\"]` (the stdout summary)");
   });
 
   test(`${s.dir}: every model-bearing node pins a model`, async () => {

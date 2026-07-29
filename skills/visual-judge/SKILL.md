@@ -69,8 +69,14 @@ npx nanoodle inspect workflows/visual-judge.noodle-graph.json
 | `Verdict` | no | Override the judge's instructions (default judges layout vs spec, ignores cosmetic noise) |
 
 `Verdict` is the judge node's name, so it is both the optional input key and the output
-key. Inputs and outputs are separate namespaces: `--input "Verdict=..."` replaces the
-judge's system prompt, and `outputs.Verdict` carries the judgement.
+key. A rename cannot separate them — it renames both. The two halves never meet, and the
+behaviour is exact:
+
+- `--input "Verdict=..."` replaces the judge's **system prompt**. It does not preset,
+  shadow, or overwrite the output.
+- `outputs.Verdict` in the stdout JSON, and the `Verdict:` stderr line, carry the judge's
+  **result**.
+- Nothing becomes ambiguous and nothing errors: each namespace holds one `Verdict`.
 
 ## Outputs
 
