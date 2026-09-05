@@ -147,3 +147,7 @@ its result, and nothing becomes ambiguous.
 ## License
 
 [MIT](LICENSE).
+
+## Character sprites: a playable skill outcome
+
+[character-sprites](skills/character-sprites/) generates matching character artwork, then uses a local rig to bake 32 transparent idle, walk, punch and jump frames. Requires Node.js, ffmpeg/ffprobe and a NanoGPT key for generating new artwork. [Play Iron Verdict](https://nanoodle.com/examples/iron-verdict/), a game a coding agent built using those assets. The graph supplies reference and parts; the skill builds animations; the agent writes gameplay. See the skill for run instructions and prototype limitations.
