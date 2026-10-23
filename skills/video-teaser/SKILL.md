@@ -8,7 +8,7 @@ description: Turn a one-liner into a short video clip — an LLM expands the lin
 Runs the bundled nanoodle workflow `workflows/video-teaser.noodle-graph.json` against the
 NanoGPT API: a one-liner (`Tagline`) feeds an LLM that writes a single cinematic shot
 description, which feeds a text-to-video model that renders a 5-second 480p clip
-(`Teaser`). Requires Node.js >= 20 and the `nanoodle` npm package (`npx nanoodle` fetches
+(`Teaser`). Requires Node.js 22.23.4+, 24.22.1+, or26.12.1+ and the `nanoodle` npm package (`npx nanoodle` fetches
 it).
 
 ## API key
