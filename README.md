@@ -60,7 +60,7 @@ cp -r skills/poster-generator <your-project>/.claude/skills/poster-generator
 Other agents only need the folder somewhere they can read `SKILL.md` and run commands
 (`~/.agents/skills/`, `~/.grok/skills/`, …).
 
-Requirements at run time: Node.js >= 20 and a NanoGPT API key in `NANOGPT_API_KEY` (or a
+Requirements at run time: Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and a NanoGPT API key in `NANOGPT_API_KEY` (or a
 `.env` file passed via `--env-file`). `npx nanoodle` fetches the executor on first use —
 nothing else to install. The skills are tested against the **nanoodle 0.8.x** CLI (the
 version `npx nanoodle` currently fetches); this repo's devDependency pins the same range.
