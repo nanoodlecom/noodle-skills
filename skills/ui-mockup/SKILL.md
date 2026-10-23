@@ -9,7 +9,7 @@ Runs the bundled nanoodle workflow `workflows/ui-mockup.noodle-graph.json` again
 NanoGPT API: the feature description (`Feature`) and a product style guide (`Style guide`)
 are joined into a brief, an LLM turns the brief into one disciplined image prompt for a
 screenshot-style mockup (explicit layout regions, exact palette, short realistic labels, no
-lorem-ipsum walls), and an image model renders it (`Mockup`). Requires Node.js 22.23.4+, 24.22.1+, or26.12.1+ and
+lorem-ipsum walls), and an image model renders it (`Mockup`). Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and
 the `nanoodle` npm package (`npx nanoodle` fetches it).
 
 Typical agent use: about to build or propose a screen, render the napkin sketch first, drop

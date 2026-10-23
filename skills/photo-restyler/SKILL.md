@@ -7,7 +7,7 @@ description: Restyle an existing photo with a plain-English instruction — an i
 
 Runs the bundled nanoodle workflow `workflows/photo-restyler.noodle-graph.json` against the
 NanoGPT API: an image input (`Photo`) plus a style instruction (`Style`) feed an image-edit
-model that outputs the transformed picture (`Restyled`). Requires Node.js 22.23.4+, 24.22.1+, or26.12.1+ and the
+model that outputs the transformed picture (`Restyled`). Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the
 `nanoodle` npm package (`npx nanoodle` fetches it).
 
 ## API key

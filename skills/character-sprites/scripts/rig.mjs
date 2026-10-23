@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Local deterministic cutout rig. Node >=20, ffmpeg and ffprobe; no npm dependencies.
+// Local deterministic cutout rig. Node 22.23.4+, 24.22.1+, or 26.12.1+, ffmpeg and ffprobe; no npm dependencies.
 import {readFile,writeFile,mkdir,copyFile,access} from 'node:fs/promises';
 import {resolve,join,dirname,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';

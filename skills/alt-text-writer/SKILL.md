@@ -9,7 +9,7 @@ Runs the bundled nanoodle workflow `workflows/alt-text.noodle-graph.json` agains
 NanoGPT API: an image input (`Image`) feeds a vision model whose question is assembled from
 two text nodes — the alt-text rules (`Alt rules`) and an optional house style guide
 (`Style guide`) — and the output (`Alt text`) is JSON with `alt_125char` and
-`numbered_caption`. Requires Node.js 22.23.4+, 24.22.1+, or26.12.1+ and the `nanoodle` npm package (`npx nanoodle`
+`numbered_caption`. Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the `nanoodle` npm package (`npx nanoodle`
 fetches it).
 
 Typical agent use: mid-PR, glob the repo's images, call this once per file, and write the
