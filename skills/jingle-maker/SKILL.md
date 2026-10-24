@@ -8,7 +8,7 @@ description: Turn a one-paragraph brief into a finished jingle with vocals — a
 Runs the bundled nanoodle workflow `workflows/jingle.noodle-graph.json` against the NanoGPT
 API: a brief (`Brief`) feeds a lyric-writing LLM; the lyrics feed both a style-inventing LLM
 and a music model, which renders the sung track (`Jingle`, ~30 seconds by default). Requires
-Node.js >= 20 and the `nanoodle` npm package (`npx nanoodle` fetches it).
+Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the `nanoodle` npm package (`npx nanoodle` fetches it).
 
 ## API key
 

@@ -8,7 +8,7 @@ description: Turn a picture into a spoken poem — a vision model describes the 
 Runs the bundled nanoodle workflow `workflows/narrated-poem.noodle-graph.json` against the
 NanoGPT API: an image input (`Picture`) feeds a vision model that describes it, an LLM turns
 the description into a four-line poem, and a TTS model speaks it (`Narration`). Requires
-Node.js >= 20 and the `nanoodle` npm package (`npx nanoodle` fetches it).
+Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the `nanoodle` npm package (`npx nanoodle` fetches it).
 
 ## API key
 

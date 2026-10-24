@@ -14,7 +14,7 @@ rendered text); an image model (`nano-banana-2-lite`) paints the card — check 
 to a local resize (`Hero`, exactly
 1200×630 — the OG spec) and a vision model that writes alt text (`AltText`) from the actual
 pixels — if the render botched something, the alt text says what is really there. Requires
-Node.js >= 20 and the `nanoodle` npm package (`npx nanoodle` fetches it).
+Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the `nanoodle` npm package (`npx nanoodle` fetches it).
 
 ## API key
 

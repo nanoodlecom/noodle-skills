@@ -10,7 +10,7 @@ NanoGPT API — a three-stage text pipeline over one input (`Diff`): a drafter w
 conventional PR body (summary, `## Changes`, `## Test plan`), an auditor compares the draft
 against the raw diff and lists every breaking change, behavioral shift, or touched file the
 draft omits, and a reviser emits the final markdown (`Final PR body`) with every audit
-finding folded in (adding `## Breaking changes` when needed). Requires Node.js >= 20 and
+finding folded in (adding `## Breaking changes` when needed). Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and
 the `nanoodle` npm package (`npx nanoodle` fetches it).
 
 ## API key

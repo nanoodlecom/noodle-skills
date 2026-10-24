@@ -7,7 +7,7 @@ description: Generate a poster image from a short idea — an LLM expands the id
 
 Runs the bundled nanoodle workflow `workflows/poster.noodle-graph.json` against the NanoGPT
 API: a text input (`Idea`) feeds an LLM that writes a vivid image prompt, which feeds an
-image model that renders the poster (`Poster`). Requires Node.js >= 20 and the `nanoodle`
+image model that renders the poster (`Poster`). Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the `nanoodle`
 npm package (`npx nanoodle` fetches it).
 
 ## API key

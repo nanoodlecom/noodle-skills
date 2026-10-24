@@ -5,7 +5,7 @@
   "description": "Ready-to-install coding-agent skills, each wrapping a nanoodle visual AI workflow — poster, photo restyle, jingle, narrated poem, video teaser",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "^22.23.4 || ^24.22.1 || >=26.12.1"
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs"

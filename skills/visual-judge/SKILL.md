@@ -10,7 +10,7 @@ NanoGPT API in two stages: a vision model describes the screenshot (`Screenshot`
 exhaustively and neutrally — it never judges — then an LLM judge compares that description
 against your acceptance criteria (`Spec`) and returns strict JSON (`Verdict`):
 `{"pass": bool, "violations": [{"issue", "severity"}]}` with severity
-`critical | major | minor`. Requires Node.js >= 20 and the `nanoodle` npm package
+`critical | major | minor`. Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+ and the `nanoodle` npm package
 (`npx nanoodle` fetches it).
 
 Typical agent use: after editing a component, screenshot the page (Playwright, your
