@@ -33,14 +33,29 @@ Add `--env-file .env` only when the key is not already exported. Add `--json` fo
 structured result (paths, costUsd, remainingBalance). Video generation typically takes a
 few minutes — don't kill the run early.
 
-Optional overrides (each raises cost — see Cost below):
+Optional overrides (longer clips raise cost — see Cost below):
 
 ```sh
 --input "Shot writer=<custom shot-writer instructions>"
---set "n3.resolution=720p"      # sharper (about $0.08/run) — 1080p about $0.12
 --set "n3.duration=10"          # longer clip (roughly doubles the video cost)
 --set "n3.aspect=9:16"          # portrait
 ```
+
+For sharper video, edit `n3.fields` in the workflow JSON, keeping both resolution
+values in sync. For 720p (about $0.08/run), merge these fields:
+
+```json
+{
+  "resolution": "720p",
+  "modelOpts": { "resolution": "720p" }
+}
+```
+
+For 1080p (about $0.12/run), change both values to `1080p`. The bundled graph sets
+both to `480p`: the pinned 0.8.x executor uses `fields.resolution`, while the 0.11.0
+CLI needs the explicit `fields.modelOpts.resolution` because it runs without a model
+catalog. `--set "n3.resolution=720p"` alone does not change the resolution sent by
+the 0.11.0 CLI.
 
 Inspect the interface anytime with:
 

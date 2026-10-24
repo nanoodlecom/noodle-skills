@@ -34,6 +34,7 @@
       "fields": {
         "model": "ltx-2-19b",
         "resolution": "480p",
+        "modelOpts": { "resolution": "480p" },
         "aspect": "16:9",
         "duration": "5"
       },
