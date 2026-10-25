@@ -13,6 +13,7 @@ import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { Workflow } from "nanoodle";
 
 // MUST be async: the mock server lives in THIS process's event loop — a sync exec would
 // block it and deadlock the child on its first HTTP request.
@@ -201,6 +202,8 @@ const SKILLS = [
       assert.equal(vidReq.json.model, "ltx-2-19b");
       assert.equal(vidReq.json.prompt, SHOT, "the shot LLM's output must become the video prompt");
       assert.equal(vidReq.json.resolution, "480p");
+      assert.equal(vidReq.json.duration, "5");
+      assert.equal(vidReq.json.aspect_ratio, "16:9");
       assert.ok(srv.of("GET /api/video/status").length >= 1, "run must poll the video status endpoint");
     },
   },
@@ -396,3 +399,36 @@ for (const s of SKILLS) {
     s.verify(srv);
   });
 }
+
+test("video-teaser: documented resolution edit reaches the API without a catalog", async () => {
+  const skillDir = join(root, "skills/video-teaser");
+  const md = readFileSync(join(skillDir, "SKILL.md"), "utf8");
+  const fields = JSON.parse(md.match(/```json\n([\s\S]*?)```/)[1]);
+  const graph = JSON.parse(readFileSync(join(skillDir, "workflows/video-teaser.noodle-graph.json"), "utf8"));
+  Object.assign(graph.nodes.find((n) => n.id === "n3").fields, fields);
+
+  let videoBody;
+  const wf = Workflow.fromJSON(graph, {
+    apiKey: "offline-test", baseUrl: "http://offline.invalid", pollIntervals: { video: 0 },
+    fetch: async (url, opts) => {
+      const path = new URL(url).pathname;
+      let json;
+      if (path === "/api/v1/chat/completions") {
+        json = { choices: [{ message: { content: SHOT } }] };
+      } else if (path === "/api/generate-video") {
+        videoBody = JSON.parse(opts.body);
+        json = { runId: "resolution-test" };
+      } else if (path === "/api/video/status") {
+        json = { status: "COMPLETED", output: { url: "http://offline.invalid/teaser.mp4" } };
+      } else {
+        assert.fail("unexpected request: " + url);
+      }
+      return new Response(JSON.stringify(json), { headers: { "content-type": "application/json" } });
+    },
+  });
+  await wf.run({ Tagline: "offline resolution test" });
+  assert.equal(videoBody.resolution, "720p");
+  assert.equal(videoBody.duration, "5");
+  assert.equal(videoBody.aspect_ratio, "16:9");
+  assert.equal(videoBody.prompt, SHOT);
+});
