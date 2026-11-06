@@ -8,7 +8,7 @@ alt text from real pixels, judge screenshots against a spec, mock up UI screens,
 self-audited PR descriptions, and mint OG cards — headless, on your own
 [NanoGPT](https://nano-gpt.com) key.
 
-Each skill is just two files: a `SKILL.md` playbook and a `workflows/*.noodle-graph.json`
+Most skills are two files: a `SKILL.md` playbook and a `workflows/*.noodle-graph.json`
 saved from the nanoodle editor. The `nanoodle` CLI (`npx nanoodle`) executes the graph; the
 agent supplies the inputs and hands back the outputs.
 
@@ -81,9 +81,24 @@ Inspect any workflow's interface offline (no key, no network):
 npx nanoodle inspect skills/jingle-maker/workflows/jingle.noodle-graph.json
 ```
 
+## Recovering a run
+
+Check the CLI exit status and the summary’s `errors` before using outputs. A graph with
+parallel branches can save one output while another fails. Keep successful media and the
+run summary in a separate directory for each attempt.
+
+A timeout or interrupted connection after a paid request does not establish that the
+remote job failed or stopped. Check its status before submitting again; another CLI run
+starts fresh and can bill again. Avoid automatic whole-workflow retries. For character
+sprites, retry extraction locally from saved sources into a fresh output directory before
+considering another paid generation.
+
+The repository’s [state machine audit](docs/state-machine-audit.md) describes dependency,
+playback, persistence, concurrency and recovery transitions, including test boundaries.
+
 ## Design your own
 
-These ten are templates, not a ceiling. The recipe is five steps:
+These eleven are templates, not a ceiling. The recipe is five steps:
 
 1. Build and test a workflow visually at [nanoodle.com](https://nanoodle.com) (runs in your
    browser on your own key), then press 💾 Save to download the `noodle-graph.json`.
@@ -112,7 +127,7 @@ npm test
 Tests are fully offline and spend nothing: they verify each graph's derived input/output
 keys against its SKILL.md, that every model-bearing node pins a model, and they execute
 every playbook's documented run command verbatim against a local stub API. The suite runs
-against the pinned devDependency, nanoodle 0.8.x — the same version `npx nanoodle` fetches.
+against the pinned devDependency, nanoodle 0.8.x — the version installed by this repository’s lockfile. `npx nanoodle` can fetch a newer release.
 
 Two guards have no hardcoded expectation. For every skill they derive the keys from that
 skill's own graph with the installed library, then assert that the `## Inputs` table lists

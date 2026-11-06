@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, cpSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,7 +39,10 @@ function documentedRunCommand(skillDir) {
   const fences = [...md.matchAll(/```sh\n([\s\S]*?)```/g)].map((m) => m[1]);
   const cmd = fences.find((f) => f.includes("nanoodle run"));
   assert.ok(cmd, "SKILL.md must contain a ```sh fence with the nanoodle run command");
-  return cmd.trim();
+  // Character sprites continues with a local rig and an intentionally long-lived
+  // HTTP server. This test executes its generation command, including redirection;
+  // rig and preview lifecycles have their own suites.
+  return cmd.split("\nnode scripts/rig.mjs")[0].trim();
 }
 
 // Canned model replies, echoed back by the stub and asserted on the far side of each hop.
@@ -68,6 +71,29 @@ const OG_ALT = "Two parallel indigo conveyor belts merge beneath bold coral text
  * fixture image.
  */
 const SKILLS = [
+  {
+    dir: "skills/character-sprites", outDir: "character-raw", key: "Rig parts", ext: /\.png$/,
+    summaryFile: "run.json",
+    script(srv) {
+      srv.script("POST /api/v1/chat/completions", {
+        json: { choices: [{ message: { content: "Right-facing furnace knight on magenta." } }] },
+      });
+      srv.script("POST /v1/images/generations", {
+        json: { data: [{ b64_json: PNG_B64 }], cost: 0.01 },
+      });
+    },
+    verify(srv) {
+      const chats = srv.of("POST /api/v1/chat/completions");
+      assert.equal(chats.length, 1);
+      assert.ok(JSON.stringify(chats[0].json.messages).includes("compact furnace knight"));
+      const images = srv.of("POST /v1/images/generations");
+      assert.equal(images.length, 2, "one canonical character and one dependent parts edit");
+      assert.equal(images[0].json.model, "meta/muse-image/text-to-image");
+      assert.equal(images[1].json.model, "meta/muse-image/edit");
+      assert.ok(String(images[1].json.imageDataUrl).includes(PNG_B64),
+        "the canonical image must reach the dependent parts edit");
+    },
+  },
   {
     dir: "skills/poster-generator", outDir: "poster-out", key: "Poster", ext: /\.png$/,
     script(srv) {
@@ -338,11 +364,15 @@ const SKILLS = [
 ];
 
 for (const s of SKILLS) {
-  const skillDir = join(root, s.dir);
+  // The character playbook redirects to run.json. Run its copied skill in the
+  // fixture workspace so tests never overwrite a developer's saved paid run.
+  const skillDir = s.summaryFile ? mkdtempSync(join(fixtureDir, "skill-")) : join(root, s.dir);
+  if (s.summaryFile) cpSync(join(root, s.dir), skillDir, {recursive: true});
 
   test(`${s.dir} SKILL.md run command works verbatim against a stub API`, async (t) => {
     const srv = await startMockServer();
     t.after(() => srv.close());
+    if (s.summaryFile) t.after(() => rmSync(join(skillDir, s.summaryFile), { force: true }));
     if (s.outDir) t.after(() => rmSync(join(skillDir, s.outDir), { recursive: true, force: true }));
     s.script(srv);
 
@@ -374,14 +404,14 @@ for (const s of SKILLS) {
     });
 
     // The run summary on stdout is the contract every playbook points agents at.
-    const summary = JSON.parse(stdout);
+    const summary = JSON.parse(s.summaryFile ? readFileSync(join(skillDir, s.summaryFile), "utf8") : stdout);
     assert.deepEqual(summary.errors, [], "run must finish with no node errors");
 
     // Media outputs: the CLI must report the documented key (0.4.x: on stderr) and save the file.
     if (s.key) {
       const m = stderr.match(new RegExp(`^${s.key}: saved (.+)$`, "m"));
-      assert.ok(m, `CLI must print a '${s.key}: saved <path>' line, got:\n` + stderr);
-      const saved = resolve(skillDir, m[1]);
+      if (!s.summaryFile) assert.ok(m, `CLI must print a '${s.key}: saved <path>' line, got:\n` + stderr);
+      const saved = resolve(skillDir, s.summaryFile ? summary.outputs[s.key] : m[1]);
       assert.ok(existsSync(saved), "saved output file must exist: " + saved);
       assert.match(saved, s.ext);
       assert.equal(resolve(skillDir, summary.outputs[s.key]), saved,
@@ -396,6 +426,10 @@ for (const s of SKILLS) {
         `stdout summary must carry the model's text in outputs["${s.textKey}"]`);
     }
 
+    if (s.summaryFile) {
+      assert.ok(existsSync(resolve(skillDir, summary.outputs.Reference)),
+        "the parallel reference resize must also be saved before rigging");
+    }
     s.verify(srv);
   });
 }
