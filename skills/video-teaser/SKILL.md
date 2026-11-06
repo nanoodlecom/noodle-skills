@@ -85,3 +85,5 @@ Each run costs about **$0.06** in NanoGPT credit at the default 5 seconds / 480p
 (`ltx-2-19b` bills per second by resolution; the LLM step is a fraction of a cent).
 Higher resolution or 10-second clips cost proportionally more. Runs spend real credit —
 tell the user before running repeatedly.
+
+If a run times out or is interrupted after submission, the remote job may still be running. Check its status and retain successful outputs before deciding to submit again. A fresh CLI invocation is not a durable resume and may bill again; do not automatically retry the whole workflow.

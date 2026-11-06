@@ -29,6 +29,19 @@ python3 -m http.server 8080 --directory ./character-pack
 
 Open `http://localhost:8080/preview.html`. Any static server works. The workflow uses one text call and two image calls. The tested Muse reference and parts calls cost $0.01 each; future pricing and latency can differ. Report actual run costs and targeted retries separately. Do not start duplicate requests while an earlier request is still running.
 
+## Inputs
+
+| Key | Purpose |
+|-----|---------|
+| `Character` | Character description; defaults to the included furnace knight. |
+| `Character designer` | Optional system prompt for the character prompt writer. |
+
+## Outputs
+
+The workflow saves `Reference.<ext>` and `Rig parts.<ext>`; their local paths are in
+`outputs.Reference` and `outputs["Rig parts"]` in `run.json`. Use those reported paths,
+then run the local rig to build the animation pack.
+
 ## Deliver
 
 - `frames/`: 32 RGBA PNGs, 256×256; `idle_00`–`idle_07`, `walk_00`–`walk_07`, `attack_00`–`attack_07`, `jump_00`–`jump_07`.
@@ -50,6 +63,8 @@ Adjust proportions and joints locally before spending on regeneration:
 ```sh
 node scripts/rig.mjs run.json ./character-adjusted ./character-pack/rig-config.json
 ```
+
+The output directory must not already exist. Each build stages its files beside the destination and publishes the complete pack with a directory rename. A failed build leaves the destination absent and removes its temporary folder; rerun from the same saved sources into a fresh destination. Concurrent builds cannot overwrite a completed pack. An interrupted process may leave a hidden temporary folder (`.<destination>-*`); remove only that abandoned folder after confirming the process has stopped. Keep the last complete pack until the new one passes review.
 
 Edit the saved configuration: `heights` sets each part's pixel height; `pivots` sets normalized [x,y] positions within each cropped part; `joints` sets [dx,dy] offsets from the hip for near/far shoulders and hips. The same part scale is reused across all frames. The script detects blank gutters around the sheet center, removes reserved magenta including enclosed gaps, and rejects empty or clipped output. It cannot identify incorrect anatomy automatically.
 

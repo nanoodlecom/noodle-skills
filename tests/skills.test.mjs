@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Workflow, SETTING_SPECS } from "nanoodle";
 
@@ -17,6 +17,10 @@ const CLI = fileURLToPath(new URL("../node_modules/nanoodle/bin/nanoodle.mjs", i
 
 /** What each SKILL.md documents. Changing a graph or a doc must keep these in sync. */
 const SKILLS = [
+  {
+    dir: "skills/character-sprites", graph: "workflows/character-rig.noodle-graph.json",
+    required: ["Character"], optional: ["Character designer"], outputs: ["Reference", "Rig parts"],
+  },
   {
     dir: "skills/poster-generator", graph: "workflows/poster.noodle-graph.json",
     required: ["Idea"], optional: ["System prompt"], outputs: ["Poster"],
@@ -80,6 +84,12 @@ const MODEL_BEARING = new Set(
     .filter(([, specs]) => specs.some((s) => s.f === "model"))
     .map(([type]) => type),
 );
+
+test("workflow guards cover every installable skill", () => {
+  const bundled = readdirSync(root + "skills", {withFileTypes: true})
+    .filter(d => d.isDirectory()).map(d => "skills/" + d.name).sort();
+  assert.deepEqual(SKILLS.map(s => s.dir).sort(), bundled);
+});
 
 for (const s of SKILLS) {
   const graphPath = root + s.dir + "/" + s.graph;

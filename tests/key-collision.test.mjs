@@ -85,6 +85,7 @@ test("the colliding-key list covers every bundled skill whose keys actually over
   const graphs = COLLIDING.map((c) => c.dir);
   const found = [];
   for (const dir of [
+    "skills/character-sprites/workflows/character-rig.noodle-graph.json",
     "skills/poster-generator/workflows/poster.noodle-graph.json",
     "skills/photo-restyler/workflows/photo-restyler.noodle-graph.json",
     "skills/jingle-maker/workflows/jingle.noodle-graph.json",

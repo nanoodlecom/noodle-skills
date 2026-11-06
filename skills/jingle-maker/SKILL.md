@@ -70,3 +70,5 @@ system prompt of the node with that name.
 Each run costs about **$0.05–0.10** in NanoGPT credit (the `Minimax-Music-02` song step
 dominates; the two LLM steps are fractions of a cent). Runs spend real credit — tell the
 user before running repeatedly.
+
+If a run times out or is interrupted after submission, the remote job may still be running. Check its status and retain successful outputs before deciding to submit again. A fresh CLI invocation is not a durable resume and may bill again; do not automatically retry the whole workflow.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Local deterministic cutout rig. Node 22.23.4+, 24.22.1+, or 26.12.1+, ffmpeg and ffprobe; no npm dependencies.
-import {readFile,writeFile,mkdir,copyFile,access} from 'node:fs/promises';
-import {resolve,join,dirname,extname} from 'node:path';
+import {readFile,writeFile,mkdir,copyFile,access,lstat,mkdtemp,rename,rm} from 'node:fs/promises';
+import {resolve,join,dirname,extname,basename} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 const [summaryFile,destination,configFile,...extra]=process.argv.slice(2);
@@ -12,7 +12,13 @@ const overrides=configFile?JSON.parse(await readFile(configFile,'utf8')):{};
 const config={heights:{body:136,arm:90,nearLeg:78,farLeg:78,...overrides.heights},pivots:{body:[.5,.95],arm:[.5,.1],nearLeg:[.45,.08],farLeg:[.45,.08],...overrides.pivots},joints:{nearHip:[7,0],farHip:[-7,0],nearShoulder:[-18,-61],farShoulder:[13,-61],...overrides.joints}};
 for(const v of Object.values(config.heights)) if(!Number.isFinite(v)||v<8||v>180) throw Error('Part heights must be 8–180 pixels.');
 for(const [group,values] of Object.entries({pivots:config.pivots,joints:config.joints})) for(const v of Object.values(values)) if(!Array.isArray(v)||v.length!==2||v.some(n=>!Number.isFinite(n)||(group==='pivots'&&(n<0||n>1))||Math.abs(n)>256)) throw Error(`Invalid ${group}: expected finite [x,y], with pivots normalized to 0–1.`);
-const SIZE=256,ROOT={x:128,y:236},dest=resolve(destination),states=['idle','walk','attack','jump'];
+const SIZE=256,ROOT={x:128,y:236},output=resolve(destination),states=['idle','walk','attack','jump'];
+// A pack is committed only after every frame, manifest and preview has succeeded.
+// Never reuse a published destination: that would mix runs or destroy saved sources.
+try{await lstat(output);throw Error('Destination already exists; choose a new output directory.');}catch(e){if(e.code!=='ENOENT')throw e;}
+await mkdir(dirname(output),{recursive:true});
+const dest=await mkdtemp(join(dirname(output),'.'+basename(output)+'-'));
+try{
 function command(bin,args,input){try{return execFileSync(bin,args,{input,maxBuffer:160*1024*1024,stdio:['pipe','pipe','pipe']});}catch(e){throw Error(`${bin} failed (ffmpeg/ffprobe required on PATH): ${e.stderr?.toString().slice(0,1200)||e.message}`);}}
 function encode(pixels,w,h,file){command('ffmpeg',['-v','error','-y','-f','rawvideo','-pix_fmt','rgba','-s',`${w}x${h}`,'-i','pipe:0','-frames:v','1','-c:v','png','-threads','1',file],pixels);}
 function bounds(p,w,h){let x=w,y=h,right=-1,bottom=-1,count=0;for(let j=0;j<h;j++)for(let i=0;i<w;i++)if(p[(j*w+i)*4+3]){x=Math.min(x,i);y=Math.min(y,j);right=Math.max(right,i);bottom=Math.max(bottom,j);count++;}return{x,y,right,bottom,width:right-x+1,height:bottom-y+1,count};}
@@ -48,4 +54,9 @@ for(const [row,state]of states.entries()){for(let i=0;i<8;i++){const name=`${sta
 for(const limb of ['farLeg','nearLeg']){const j=config.joints[limb==='farLeg'?'farHip':'nearHip'];draw(legs,limb,ROOT.x+j[0],hipY+j[1],p[limb]);}const legBounds=bounds(rgba(legs),SIZE,SIZE),groundShift=ROOT.y-1-legBounds.bottom,baseY=hipY+groundShift,canvas=new Float32Array(SIZE*SIZE*4);
 for(const [part,joint,angle]of [['arm','farShoulder',p.farArm],['farLeg','farHip',p.farLeg],['nearLeg','nearHip',p.nearLeg]]){const j=config.joints[joint];draw(canvas,part,ROOT.x+j[0],baseY+j[1]+(part==='arm'?p.breath:0),angle);}draw(canvas,'body',ROOT.x,baseY+p.breath,p.body);const j=config.joints.nearShoulder;draw(canvas,'arm',ROOT.x+j[0]+(state==='attack'?[0,0,0,6,15,15,6,0][i]:0),baseY+j[1]+p.breath+(state==='attack'?[0,0,0,3,8,8,3,0][i]:0),p.nearArm);const pixels=rgba(canvas),b=bounds(pixels,SIZE,SIZE);if(!b.count||b.x<2||b.y<2||b.right>253||b.bottom>253)throw Error(`${name}: frame exceeds safe bounds; adjust fixed rig proportions/joints.`);encode(pixels,SIZE,SIZE,join(dest,'frames',`${name}.png`));for(let y=0;y<SIZE;y++)pixels.copy(atlas,((row*SIZE+y)*2048+i*SIZE)*4,y*SIZE*4,(y+1)*SIZE*4);manifest.frames[`${name}.png`]={frame:{x:i*SIZE,y:row*SIZE,w:SIZE,h:SIZE},rotated:false,trimmed:false,spriteSourceSize:{x:0,y:0,w:SIZE,h:SIZE},sourceSize:{w:SIZE,h:SIZE},pivot:{x:.5,y:236/256}};qa.frames.push({name,outputBounds:b,hipPixels:{x:ROOT.x,y:baseY},pose:p});}manifest.animations[state]={frames:Array.from({length:8},(_,i)=>`${state}_${String(i).padStart(2,'0')}.png`),durations:state==='jump'?[65,65,85,100,85,65,90,80]:state==='attack'?[120,90,110,55,75,100,90,150]:Array(8).fill(state==='idle'?150:90),repeat:['attack','jump'].includes(state)?0:-1};}
 manifest.animations.jump.phases={anticipation:[0],rise:[1,2],apex:[3],fall:[4,5],land:[6,7]};manifest.animations.jump.note='Pose frames only: apply world-space gravity and jump velocity in the game; select phases from vertical velocity and ground contact.';
-encode(atlas,2048,1024,join(dest,'atlas.png'));await writeFile(join(dest,'atlas.json'),JSON.stringify(manifest,null,2)+'\n');await writeFile(join(dest,'qa.json'),JSON.stringify(qa,null,2)+'\n');const template=resolve(dirname(fileURLToPath(import.meta.url)),'../assets/preview.html');try{await access(template);await copyFile(template,join(dest,'preview.html'));}catch(e){if(e.code!=='ENOENT')throw e;}console.log(JSON.stringify({atlas:join(dest,'atlas.json'),qa:join(dest,'qa.json'),frames:32,visualReview:'required',method:'cutout-rig'}));
+encode(atlas,2048,1024,join(dest,'atlas.png'));await writeFile(join(dest,'atlas.json'),JSON.stringify(manifest,null,2)+'\n');await writeFile(join(dest,'qa.json'),JSON.stringify(qa,null,2)+'\n');const template=resolve(dirname(fileURLToPath(import.meta.url)),'../assets/preview.html');await copyFile(template,join(dest,'preview.html'));
+// Concurrent builders have separate staging folders. Once one publishes a nonempty
+// pack, another rename cannot replace it, so only one complete result can win.
+await rename(dest,output);
+console.log(JSON.stringify({atlas:join(output,'atlas.json'),qa:join(output,'qa.json'),frames:32,visualReview:'required',method:'cutout-rig'}));
+}finally{await rm(dest,{recursive:true,force:true});}
